@@ -1,0 +1,28 @@
+
+# BASE
+q: 'true'                                                    # quit ShortStrokes program, basically do nothing
+
+## OPEN applications
+oe: 'eidolon menu'                                           # eidolon - steam games menu
+oc: 'termite --role "BORDERLESS-<MEDIUM-SMALL>" --exec irb'  # irb - calculator
+
+## OPEN web pages
+Od: 'waterfox https://duckduckgo.com/'                       # DuckDuckGo
+Oy: 'waterfox https://www.youtube.com/'                      # youtube
+
+## EDIT (config) files
+ee: 'termite --role "BORDERLESS-<XLARGE-MEDIUM>" --exec "vim /home/noah/Projects/Ruby/ShortStrokes/keybindings.yml"'  # this file
+ei3: 'termite --role "<LARGE-MEDIUM>" --exec /home/noah/bin/i3conf'     # i3conf
+ev: 'termite --role "<LARGE-LARGE>" --exec "vim /home/noah/.vimrc"'     # vimrc
+eb: 'termite --role "<LARGE-LARGE>" --exec "vim /home/noah/.bashrc"'    # bashrc
+
+## i3profile
+pp: '/home/noah/bin/i3profile'                               # i3profile
+ph: '/home/noah/bin/i3profile h77m-arch'                     # i3profile h77m-arch
+pa: '/home/noah/bin/i3profile acer'                          # i3profile acer
+poa: '/home/noah/bin/i3profile acer,onedisp'                 # i3profile acer,onedisp
+pA: '/home/noah/bin/i3profile aware-desktop'                 # i3profile aware
+
+## MISC
+ue: 'eidolon update'                                         # update eidolon games list
+
