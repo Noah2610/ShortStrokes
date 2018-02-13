@@ -33,7 +33,6 @@ VALID_ARGUMENTS = {
 	}
 }
 
-require "byebug"
 def handle_arguments args
 	return  if (args.nil? || args[:options].nil?)
 	if    (args[:options][:help])
