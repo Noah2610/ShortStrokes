@@ -133,6 +133,7 @@ def get_config_file
 end
 
 def replace_constants constants, hash, constant_key = '@'
+	return hash  if (constants.nil?)
 	hash_str = hash.to_s
 	ret_str = hash_str.dup
 	scanned = []
@@ -262,13 +263,13 @@ class ShortStroke
 	#  if it is, execute and exit
 	def check_text
 		if (cmd = KEYBINDINGS[@text])
+			cmd = cmd.gsub "~", Dir.home  # Replace '~' with full home path
 			if (CONFIG[:exec_bg])
 				## Execute command in background, instead of current shell
 				if (CONFIG[:shell])
-					pid = Process.spawn "#{CONFIG[:shell]} -c \"#{cmd}\"", out: "/dev/null", err: "/dev/null", pgroup: true
+					pid = Process.spawn "#{CONFIG[:shell]} -c '#{cmd}'", out: "/dev/null", err: "/dev/null", pgroup: true
 					Process.detach pid
 				else
-					cmd = cmd.gsub "~", Dir.home  # Replace '~' with full home path, because '~' doesn't work unless you start command bash
 					pid = Process.spawn cmd, out: "/dev/null", err: "/dev/null", pgroup: true
 					Process.detach pid
 				end
@@ -276,7 +277,7 @@ class ShortStroke
 				## Execute command in current process
 				if (CONFIG[:shell])
 					## Execute command in new shell
-					`#{CONFIG[:shell]} -c \"#{cmd}\"`
+					`#{CONFIG[:shell]} -c '#{cmd}'`
 				else
 					## Just execute command, probably spawns /bin/sh anyway
 					`#{cmd}`
