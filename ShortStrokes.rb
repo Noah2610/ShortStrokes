@@ -9,43 +9,56 @@ ROOT = File.dirname(Pathname.new(File.absolute_path(__FILE__)).realpath)
 require File.join(ROOT, 'ArgumentParser.rb')
 
 CONFIG_PATHS = [
-	File.join(Dir.home, '.config/shortstrokes/keybindings.yml'),
+	File.join(Dir.home, '.config/shortstrokes/config.yml'),
 	File.join(Dir.home, '.shortstrokes.yml'),
-	File.join(ROOT, 'keybindings.yml')
+	File.join(ROOT, 'config.yml')
 ]
 
+DEFAULT_SHELL = '/bin/bash'
 HELP_TXT = File.read(File.join(ROOT, 'help.txt'))
-VERSION = "ShortStrokes 1.0"
-config = nil
+VERSION = 'ShortStrokes 1.0'
 
 VALID_ARGUMENTS = {
 	single: {
-		help:     [["h"],        false],
-		version:  [["v"],        false],
-		config:   [["c"],        true],
-		force:    [["f"],        false]
+		help:          [["h"],                               false],
+		version:       [["v"],                               false],
+		config:        [["c"],                               true],
+		force:         [["f"],                               false],
+		shell:         [["s"],                               true],
+		text_padding:  [["p"],                               true],
+		exec_bg:       [["b"],                               false],
+		exec_fg:       [["f"],                               false]
 	},
 	double: {
-		help:     [["help"],     false],
-		version:  [["version"],  false],
-		config:   [["config"],   true],
-		force:    [["force"],    false]
+		help:          [["help"],                            false],
+		version:       [["version"],                         false],
+		config:        [["config"],                          true],
+		force:         [["force"],                           false],
+		shell:         [["shell"],                           true],
+		text_padding:  [["text_padding"],                    true],
+		exec_bg:       [["bg","exec-background","exec-bg"],  false],
+		exec_fg:       [["fg","exec-foreground","exec-fg"],  false]
 	}
 }
 
 def handle_arguments args
 	return  if (args.nil? || args[:options].nil?)
+	settings = {}
 	if    (args[:options][:help])
 		puts HELP_TXT
 		exit
+
 	elsif (args[:options][:version])
 		puts VERSION
 		exit
-	elsif (args[:options][:config])
+	end
+
+	## Config File
+	if (args[:options][:config])
 		if (File.file?(args[:options][:config]))
 			if (args[:options][:config].downcase =~ /\A.+\.(yml|yaml)\z/ || args[:options][:force])
 				begin
-					config = YAML.load_file args[:options][:config]
+					settings[:config] = YAML.load_file args[:options][:config]
 				rescue
 					abort [
 						"Error: Seems like your config file (#{args[:options][:config]}) isn't a valid YAML file.",
@@ -62,6 +75,32 @@ def handle_arguments args
 			abort "Error: File #{args[:options][:config]} doesn't exist."
 		end
 	end
+
+	## Shell
+	if (shell = args[:options][:shell])
+		unless (shell.downcase == 'false')
+			settings[:shell] = shell
+		else
+			settings[:shell] = false  # Don't use shell, execute command directly
+		end
+	end
+
+	## Text Padding
+	if (padding = args[:options][:text_padding])
+		settings[:text_padding] = padding.to_i
+	end
+
+	## Execute Command In Background
+	if (args[:options][:exec_bg])
+		settings[:exec_bg] = true
+	end
+
+	## Execute Command In Foreground
+	if (args[:options][:exec_fg])
+		settings[:exec_bg] = false
+	end
+
+	return settings
 end
 
 def get_config_file
@@ -76,11 +115,33 @@ def get_config_file
 end
 
 ARGUMENTS = ArgumentParser.get_arguments VALID_ARGUMENTS
-handle_arguments ARGUMENTS
+argument_settings = handle_arguments ARGUMENTS
 
-config ||= get_config_file
-CONFIG = config
-exit  if (CONFIG.nil?)
+# Get settings from config file
+config = argument_settings[:config] || get_config_file
+# Set config
+CONFIG = config['config'] ? (config['config'].map do |k,v|
+	# Convert 'true' and 'false' strings to booleans
+	if    (v.is_a?(String) && v.downcase == 'true')
+		next [k.to_sym, true]
+	elsif (v.is_a?(String) && v.downcase == 'false')
+		next [k.to_sym, false]
+	end
+	next [k.to_sym, v]
+end .to_h) : {}
+# Convert string keys in hash to symbols
+argument_settings.each do |key,val|
+	next  if (key == :config)
+	CONFIG[key] = val
+end
+# Set keybindings
+KEYBINDINGS = config['keybindings']
+
+abort [
+	"Error: No keybindings given.",
+	"  Check that your config file contains keybindings",
+	"  under a key named 'keybindings'."
+].join("\n")  if (KEYBINDINGS.nil?)
 
 class ShortStroke
 	def initialize
@@ -88,8 +149,8 @@ class ShortStroke
 		Curses.crmode
 		Curses.noecho
 		Curses.curs_set 0
-		@width = [Curses.cols, (CONFIG['config'] ? (CONFIG['config']['width'] || 47) : 47)].min
-		@height = [Curses.lines, (CONFIG['config'] ? (CONFIG['config']['height'] || 7) : 7)].min
+		@width = [Curses.cols, (CONFIG['width'] || 47)].min
+		@height = [Curses.lines, (CONFIG['height'] || 7)].min
 
 		@window = Curses::Window.new @height, @width, ((Curses.lines / 2) - (@height  / 2)), ((Curses.cols / 2) - (@width / 2))
 		@window.box "|", "-"
@@ -98,7 +159,7 @@ class ShortStroke
 
 		@text = ""
 		# Padding between edges of window and text
-		@text_padding = 8
+		@text_padding = CONFIG[:text_padding] || 4
 	end
 
 	def handle_input char = nil
@@ -132,17 +193,35 @@ class ShortStroke
 	## Check if @text is valid command,
 	#  if it is, execute and exit
 	def check_text
-		if (cmd = CONFIG[@text])
-			cmd = cmd.gsub "~", Dir.home  # Replace '~' with full home path, because '~' doesn't work unless you start bash in your shortcut
-			pid = Process.spawn cmd, out: "/dev/null", err: "/dev/null", pgroup: true
-			Process.detach pid
+		if (cmd = KEYBINDINGS[@text])
+			if (CONFIG[:exec_bg])
+				## Execute command in background, instead of current shell
+				if (CONFIG[:shell])
+					pid = Process.spawn "#{SHELL} -c \"#{cmd}\"", out: "/dev/null", err: "/dev/null", pgroup: true
+					Process.detach pid
+				else
+					cmd = cmd.gsub "~", Dir.home  # Replace '~' with full home path, because '~' doesn't work unless you start command bash
+					pid = Process.spawn cmd, out: "/dev/null", err: "/dev/null", pgroup: true
+					Process.detach pid
+				end
+			else
+				## Execute command in current process
+				if (CONFIG[:shell])
+					## Execute command in new shell
+					`#{SHELL} -c \"#{cmd}\"`
+				else
+					## Just execute command, probably spawns /bin/sh anyway
+					`#{cmd}`
+				end
+			end
+
 			exit
 		end
 	end
 
 	## Redraw and center @text to terminal
 	def update_text
-		max_width = @width - @text_padding
+		max_width = @width - (@text_padding * 2)
 		text_lns = @text.split("\n").map.with_index do |ln,index|
 			if (ln.size > max_width)
 				next (0 ... ((ln.size / (max_width)) + 1).floor).map do |n|

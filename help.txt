@@ -15,27 +15,32 @@ INSTALLATION
     $ ./ShortStrokes.rb
   without any issues.
 
-USAGE
+SYNOPSIS
+  ShortStrokes
+  ShortStrokes --config /PATH/TO/CONFIG.yml
+  ShortStrokes [--help|-h|--version|-v]
+
+DESCRIPTION
   The basic usage of this script is to bind it to a keyboard shortcut
   and define your desired keybindings as shell script
-  in a keybindings YAML file.
+  in a config YAML file.
   After you have entered text inside the program,
   use the escape key to clear it or to exit the script when the input is empty.
 
 CONFIGURATION
   This script looks for a keybindings/config (yaml) file
   in the following order / locations:
-    - ~/.config/shortstrokes/keybindings.yml
+    - ~/.config/shortstrokes/config.yml
     - ~/.shortstrokes.yml
-    - \<PROJECT-ROOT\>/keybindings.yml
+    - \<PROJECT-ROOT\>/config.yml
   This is overwritten when using the --config option.
   A default config file is included with the project
-  in ./keybindings.yml.
+  in ./config.yml.
 
 ARGUMENTS / OPTIONS
   -h, --help           Show help text, basically this README
   -v, --version        Show version
-  -c, --config FILE    Use keybindings config file FILE (yaml)
+  -c, --config FILE    Use config/keybindings file FILE (yaml)
   -f, --force          Ignore error when using --config with a file
                        without a .yml or .yaml extension
 

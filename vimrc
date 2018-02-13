@@ -1,1 +1,1 @@
-nmap <leader>r :!./main.rb<CR>
+nmap <leader>r :!./ShortStrokes.rb --config ./config.yml 

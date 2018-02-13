@@ -1,0 +1,26 @@
+
+### CONFIGURATION
+config:
+  width:  47                                  # Maximum width/columns of window inside terminal
+  height: 7                                   # Maximum height/lines of window inside terminal
+  text_padding: 4                             # Padding of input for each line
+  shell: '/bin/bash'                          # Shell used to execute keybinding commands, set to 'false' to execute command directly
+  exec_bg: 'true'
+
+### KEYBINDINGS
+keybindings:
+  ## BASE
+  q:  'true'                                  # quit ShortStrokes program, basically do nothing
+
+  ## OPEN applications
+  ot: '$TERMINAL'                             # open $TERMINAL terminal emulator
+  of: 'firefox --new-window'                  # open Firefox
+
+  ## OPEN web pages
+  Od: 'firefox https://duckduckgo.com/'       # open DuckDuckGo
+  Ow: 'firefox https://wiki.archlinux.org/'   # open Arch Linux Wiki
+
+  ## EDIT (config) files
+  eb: '$TERMINAL --exec "vim ~/.bashrc"'      # bashrc
+  ev: '$TERMINAL --exec "vim ~/.vimrc"'       # vimrc
+
