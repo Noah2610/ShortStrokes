@@ -20,40 +20,47 @@ VERSION = 'ShortStrokes 1.0'
 
 VALID_ARGUMENTS = {
 	single: {
-		help:          [["h"],                               false],
-		version:       [["v"],                               false],
-		config:        [["c"],                               true],
-		force:         [["f"],                               false],
-		shell:         [["s"],                               true],
-		text_padding:  [["p"],                               true],
-		exec_bg:       [["b"],                               false],
-		exec_fg:       [["f"],                               false]
+		help:          [['h'],                               false],
+		version:       [['v'],                               false],
+		config:        [['c'],                               true],
+		force:         [['f'],                               false],
+		width:         [['w'],                               true],
+		height:        [['h'],                               true],
+		shell:         [['s'],                               true],
+		text_padding:  [['p'],                               true],
+		exec_bg:       [['b'],                               false],
+		exec_fg:       [['f'],                               false]
 	},
 	double: {
-		help:          [["help"],                            false],
-		version:       [["version"],                         false],
-		config:        [["config"],                          true],
-		force:         [["force"],                           false],
-		shell:         [["shell"],                           true],
-		text_padding:  [["text_padding"],                    true],
-		exec_bg:       [["bg","exec-background","exec-bg"],  false],
-		exec_fg:       [["fg","exec-foreground","exec-fg"],  false]
+		help:          [['help'],                            false],
+		version:       [['version'],                         false],
+		config:        [['config'],                          true],
+		force:         [['force'],                           false],
+		width:         [['width','cols','columns'],          true],
+		height:        [['height','rows','lines'],           true],
+		shell:         [['shell'],                           true],
+		text_padding:  [['text-padding'],                    true],
+		exec_bg:       [['bg','exec-background','exec-bg'],  false],
+		exec_fg:       [['fg','exec-foreground','exec-fg'],  false],
+		no_border:     [['no-border','borderless'],          false]
 	}
 }
 
 def handle_arguments args
 	return  if (args.nil? || args[:options].nil?)
 	settings = {}
+	## Help - help
 	if    (args[:options][:help])
 		puts HELP_TXT
 		exit
 
+	## Version - version
 	elsif (args[:options][:version])
 		puts VERSION
 		exit
 	end
 
-	## Config File
+	## Config File - config
 	if (args[:options][:config])
 		if (File.file?(args[:options][:config]))
 			if (args[:options][:config].downcase =~ /\A.+\.(yml|yaml)\z/ || args[:options][:force])
@@ -76,28 +83,39 @@ def handle_arguments args
 		end
 	end
 
-	## Shell
-	if (shell = args[:options][:shell])
-		unless (shell.downcase == 'false')
-			settings[:shell] = shell
-		else
-			settings[:shell] = false  # Don't use shell, execute command directly
-		end
+	## Width - width
+	if (width = args[:options][:width])
+		settings[:width] = width
 	end
 
-	## Text Padding
+	## Height - height
+	if (height = args[:options][:height])
+		settings[:height] = height
+	end
+
+	## Shell - shell
+	if (shell = args[:options][:shell])
+		settings[:shell] = shell
+	end
+
+	## Text Padding - text_padding
 	if (padding = args[:options][:text_padding])
 		settings[:text_padding] = padding.to_i
 	end
 
-	## Execute Command In Background
+	## Execute Command In Background - exec_bg
 	if (args[:options][:exec_bg])
 		settings[:exec_bg] = true
 	end
 
-	## Execute Command In Foreground
+	## Execute Command In Foreground - exec_fg
 	if (args[:options][:exec_fg])
 		settings[:exec_bg] = false
+	end
+
+	## No Border - no_border
+	if (args[:options][:no_border])
+		settings[:no_border] = true
 	end
 
 	return settings
@@ -114,28 +132,77 @@ def get_config_file
 	return ret
 end
 
+def replace_constants constants, hash, constant_key = '@'
+	hash_str = hash.to_s
+	ret_str = hash_str.dup
+	scanned = []
+	hash_str.scan /#{'\\' + constant_key}\w+/ do |key|
+		next  if (scanned.include? key)
+		const = key.delete constant_key
+		if (val = constants[const])
+			ret_str.gsub! /#{key}/, val.to_s
+			scanned << key
+		else
+			abort [
+				"Error: Constant '#{key}' hasn't been defined.",
+				"  Define it in your config under 'constants' to use it."
+			].join("\n")
+		end
+	end
+	return eval(ret_str)
+end
+
 ARGUMENTS = ArgumentParser.get_arguments VALID_ARGUMENTS
 argument_settings = handle_arguments ARGUMENTS
 
 # Get settings from config file
-config = argument_settings[:config] || get_config_file
+config_file_content = argument_settings[:config] || get_config_file
+
+# Set Constants
+CONSTANTS = config_file_content['constants']
+
 # Set config
-CONFIG = config['config'] ? (config['config'].map do |k,v|
-	# Convert 'true' and 'false' strings to booleans
-	if    (v.is_a?(String) && v.downcase == 'true')
-		next [k.to_sym, true]
-	elsif (v.is_a?(String) && v.downcase == 'false')
-		next [k.to_sym, false]
-	end
-	next [k.to_sym, v]
-end .to_h) : {}
-# Convert string keys in hash to symbols
-argument_settings.each do |key,val|
+CONFIG = replace_constants(
+	CONSTANTS,
+	config_file_content['config'] ? (config_file_content['config'].map do |key,val|
+		value = val.to_s =~ /\A[0-9]+\z/ ? val.to_i : val.to_s
+		nex = [key.to_sym, value]
+		# Convert 'true' and 'false' strings to booleans
+		if    (value.downcase == 'true')
+			nex[1] = true
+		elsif (value.downcase == 'false')
+			nex[1] = false
+		end  if (value.is_a?(String))
+		# Check VALID_ARGUMENTS for aliases
+		unless (VALID_ARGUMENTS[:double][key.to_sym])
+			VALID_ARGUMENTS[:double].each do |optk,optv|
+				if (optv.first.include? key)
+					nex[0] = optk
+					next
+				end
+			end
+		end
+		next nex
+	end .to_h) : {}
+)
+
+# Add command-line options to CONFIG
+replace_constants(CONSTANTS, argument_settings).each do |key,val|
 	next  if (key == :config)
-	CONFIG[key] = val
+	value = val.to_s =~ /\A[0-9]+\z/ ? val.to_i : val.to_s
+	if    (value.downcase == 'true')
+		value = true
+	elsif (value.downcase == 'false')
+		value = false
+	end  if (value.is_a?(String))
+	CONFIG[key] = value
 end
+CONFIG[:shell] = DEFAULT_SHELL  if (CONFIG[:shell].nil?)
 # Set keybindings
-KEYBINDINGS = config['keybindings']
+KEYBINDINGS = replace_constants(
+	CONSTANTS,
+	config_file_content['keybindings']
+)
 
 abort [
 	"Error: No keybindings given.",
@@ -143,17 +210,18 @@ abort [
 	"  under a key named 'keybindings'."
 ].join("\n")  if (KEYBINDINGS.nil?)
 
+
 class ShortStroke
 	def initialize
 		Curses.init_screen
 		Curses.crmode
 		Curses.noecho
 		Curses.curs_set 0
-		@width = [Curses.cols, (CONFIG['width'] || 47)].min
-		@height = [Curses.lines, (CONFIG['height'] || 7)].min
+		@width = [Curses.cols, (CONFIG[:width] || 47)].min
+		@height = [Curses.lines, (CONFIG[:height] || 7)].min
 
 		@window = Curses::Window.new @height, @width, ((Curses.lines / 2) - (@height  / 2)), ((Curses.cols / 2) - (@width / 2))
-		@window.box "|", "-"
+		@window.box "|", "-"  unless (CONFIG[:no_border])
 
 		@window.setpos (@height / 2), (@width / 2)
 
@@ -197,7 +265,7 @@ class ShortStroke
 			if (CONFIG[:exec_bg])
 				## Execute command in background, instead of current shell
 				if (CONFIG[:shell])
-					pid = Process.spawn "#{SHELL} -c \"#{cmd}\"", out: "/dev/null", err: "/dev/null", pgroup: true
+					pid = Process.spawn "#{CONFIG[:shell]} -c \"#{cmd}\"", out: "/dev/null", err: "/dev/null", pgroup: true
 					Process.detach pid
 				else
 					cmd = cmd.gsub "~", Dir.home  # Replace '~' with full home path, because '~' doesn't work unless you start command bash
@@ -208,7 +276,7 @@ class ShortStroke
 				## Execute command in current process
 				if (CONFIG[:shell])
 					## Execute command in new shell
-					`#{SHELL} -c \"#{cmd}\"`
+					`#{CONFIG[:shell]} -c \"#{cmd}\"`
 				else
 					## Just execute command, probably spawns /bin/sh anyway
 					`#{cmd}`
@@ -233,7 +301,7 @@ class ShortStroke
 		end .flatten
 
 		@window.clear
-		@window.box "|", "-"
+		@window.box "|", "-"  unless CONFIG[:no_border]
 		text_lns.each_with_index do |ln,row_n|
 			x = (@width / 2) - (ln.size / 2)
 			y = (@height / 2) - ((text_lns.size / 2) - (row_n))

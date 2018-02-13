@@ -1,26 +1,39 @@
 
 ### CONFIGURATION
+##  These are settings used in the script.
+##  They can all be used on the command-line, with the same name.
 config:
-  width:  47                                  # Maximum width/columns of window inside terminal
-  height: 7                                   # Maximum height/lines of window inside terminal
-  text_padding: 4                             # Padding of input for each line
-  shell: '/bin/bash'                          # Shell used to execute keybinding commands, set to 'false' to execute command directly
-  exec_bg: 'true'
+  width:           47                         # Maximum width/columns of window inside terminal
+  height:          7                          # Maximum height/lines of window inside terminal
+  text-padding:    4                          # Padding of input for each line
+  shell:           '/bin/bash'                # Shell used to execute keybinding commands, set to 'false' to execute command directly
+  exec-background: 'true'                     # Execute command in background
+  borderless:      'false'                    # Don't draw borders
+
+### CONSTANTS
+##  Variables that can be used with '@' inside this config.
+##  Constants can be used anywhere in your config and from the command-line.
+constants:
+  terminal: 'termite'
+  browser:  'waterfox'
 
 ### KEYBINDINGS
+##  Here you can define your keybindings.
+##  The keystroke combination to activate them is their key,
+##  and their value is the shell script that will be executed.
 keybindings:
   ## BASE
   q:  'true'                                  # quit ShortStrokes program, basically do nothing
 
   ## OPEN applications
-  ot: '$TERMINAL'                             # open $TERMINAL terminal emulator
-  of: 'firefox --new-window'                  # open Firefox
+  ot: '@terminal'                             # Open terminal emulator
+  of: '@browser --new-window'                 # Open browser
 
   ## OPEN web pages
-  Od: 'firefox https://duckduckgo.com/'       # open DuckDuckGo
-  Ow: 'firefox https://wiki.archlinux.org/'   # open Arch Linux Wiki
+  Od: '@browser https://duckduckgo.com/'      # Open DuckDuckGo
+  Ow: '@browser https://wiki.archlinux.org/'  # Open Arch Linux Wiki
 
   ## EDIT (config) files
-  eb: '$TERMINAL --exec "vim ~/.bashrc"'      # bashrc
-  ev: '$TERMINAL --exec "vim ~/.vimrc"'       # vimrc
+  eb: '@terminal --exec "vim ~/.bashrc"'      # Edit bashrc
+  ev: '@terminal --exec "vim ~/.vimrc"'       # Edit vimrc
 
