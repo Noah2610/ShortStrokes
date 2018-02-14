@@ -14,8 +14,12 @@ CONFIG_PATHS = [
 	File.join(ROOT, 'config.yml')
 ]
 
-HELP_TXT = File.read(File.join(ROOT, 'help.txt'))
-VERSION = 'ShortStrokes 1.0'
+HELP_TXT = File.read(File.join(ROOT, 'README.txt'))
+VERSION = [
+	'ShortStrokes 1.0',
+	'https://github.com/Noah2610/ShortStrokes',
+	'by Noah Rosenzweig'
+].join("\n")
 DEFAULT_SHELL = '/bin/bash'
 DEFAULT_CONSTANTS = {
 	'SHORTSTROKES_ROOT' => ROOT
