@@ -8,15 +8,16 @@ config:
   shell:           '/bin/bash'                # Shell used to execute keybinding commands, set to 'false' to execute command directly
   text-padding:    4                          # Padding of input for each line
   exec-background: 'true'                     # Execute command in background
-  borderless:      'false'                    # Don't draw borders
+  borderless:      'false'                    # Don't draw borders when set to 'true'
 
 ### CONSTANTS
 ##  Variables that can be used with '@' inside this config.
-##  Constants can be used anywhere in your config and from the command-line.
+##  Constants can be used anywhere in your config, except in this 'constants' section.
+##  They can also be used in options from the command-line.
 constants:
-  terminal:          'termite'
-  browser:           'firefox'
-  editor:            'vim'
+  terminal: 'termite'
+  browser:  'firefox'
+  editor:   'vim'
 
 ### KEYBINDINGS
 ##  Here you can define your keybindings.
@@ -37,6 +38,6 @@ keybindings:
   ## EDIT (config) files
   ee: '@terminal --exec "@editor ~/.config/shortstrokes/config.yml"'  # Edit config file
   eE: '@terminal --exec "@editor @SHORTSTROKES_ROOT/config.yml"'      # Edit THIS config file
-  eb: '@terminal --exec "@editor ~/.bashrc"'      # Edit bashrc
-  ev: '@terminal --exec "@editor ~/.vimrc"'       # Edit vimrc
+  eb: '@terminal --exec "@editor ~/.bashrc"'                          # Edit bashrc
+  ev: '@terminal --exec "@editor ~/.vimrc"'                           # Edit vimrc
 
