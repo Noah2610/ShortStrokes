@@ -5,8 +5,8 @@
 config:
   width:           47                         # Maximum width/columns of window inside terminal
   height:          7                          # Maximum height/lines of window inside terminal
-  text-padding:    4                          # Padding of input for each line
   shell:           '/bin/bash'                # Shell used to execute keybinding commands, set to 'false' to execute command directly
+  text-padding:    4                          # Padding of input for each line
   exec-background: 'true'                     # Execute command in background
   borderless:      'false'                    # Don't draw borders
 
@@ -14,8 +14,9 @@ config:
 ##  Variables that can be used with '@' inside this config.
 ##  Constants can be used anywhere in your config and from the command-line.
 constants:
-  terminal: 'termite'
-  browser:  'waterfox'
+  terminal:          'termite'
+  browser:           'firefox'
+  editor:            'vim'
 
 ### KEYBINDINGS
 ##  Here you can define your keybindings.
@@ -34,6 +35,8 @@ keybindings:
   Ow: '@browser https://wiki.archlinux.org/'  # Open Arch Linux Wiki
 
   ## EDIT (config) files
-  eb: '@terminal --exec "vim ~/.bashrc"'      # Edit bashrc
-  ev: '@terminal --exec "vim ~/.vimrc"'       # Edit vimrc
+  ee: '@terminal --exec "@editor ~/.config/shortstrokes/config.yml"'  # Edit config file
+  eE: '@terminal --exec "@editor @SHORTSTROKES_ROOT/config.yml"'      # Edit THIS config file
+  eb: '@terminal --exec "@editor ~/.bashrc"'      # Edit bashrc
+  ev: '@terminal --exec "@editor ~/.vimrc"'       # Edit vimrc
 

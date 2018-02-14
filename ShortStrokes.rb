@@ -14,9 +14,12 @@ CONFIG_PATHS = [
 	File.join(ROOT, 'config.yml')
 ]
 
-DEFAULT_SHELL = '/bin/bash'
 HELP_TXT = File.read(File.join(ROOT, 'help.txt'))
 VERSION = 'ShortStrokes 1.0'
+DEFAULT_SHELL = '/bin/bash'
+DEFAULT_CONSTANTS = {
+	'SHORTSTROKES_ROOT' => ROOT
+}
 
 VALID_ARGUMENTS = {
 	single: {
@@ -134,6 +137,7 @@ end
 
 def replace_constants constants, hash, constant_key = '@'
 	return hash  if (constants.nil?)
+	return {}    if (hash.nil? || hash.empty?)
 	hash_str = hash.to_s
 	ret_str = hash_str.dup
 	scanned = []
@@ -160,7 +164,7 @@ argument_settings = handle_arguments ARGUMENTS
 config_file_content = argument_settings[:config] || get_config_file
 
 # Set Constants
-CONSTANTS = config_file_content['constants']
+CONSTANTS = DEFAULT_CONSTANTS.merge(replace_constants(DEFAULT_CONSTANTS, config_file_content['constants']))
 
 # Set config
 CONFIG = replace_constants(
