@@ -35,9 +35,9 @@ in the following order / locations:
 * `~/.shortstrokes.yml`
 * `<PROJECT-ROOT>/config.yml`
   
-This is overwritten when using the --config option.
-A default config file is included with the project
-in ./config.yml.
+You can define a custom config path with `--config`.  
+A default config file is included with the project in `./config.yml`.  
+  
 The configuration file consists of three sections:
 * 'config'
 		This section can contain all command-line options;  
