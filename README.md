@@ -39,7 +39,7 @@ You can define a custom config path with `--config`.
 A default config file is included with the project in `./config.yml`.  
   
 The configuration file consists of three sections:
-* 'config'
+* 'config'  
 		This section can contain all command-line options;  
 		Use a double dash ('--') version of an option without the two dashes  
 		at the start, and separate it from the value with a colon (':').  
@@ -47,7 +47,7 @@ The configuration file consists of three sections:
 ```yaml
 width: 47
 ```
-* 'constants'
+* 'constants'  
 		Here you can define any constants/variables you want to be able to use  
 		in your config. Use them by adding a '@' in front of its name,  
 		wherever you want it to be replaced by its associated value.  
@@ -61,7 +61,7 @@ browser: 'firefox'
 # using it:
 ob: '@browser --new-window'
 ```
-* 'keybindings'
+* 'keybindings'  
 		This is where you actually define all your keystrokes  
 		and their associated shell script commands.  
 		The key is the keystroke and its value is the shell command.  
