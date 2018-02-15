@@ -195,6 +195,9 @@ CONFIG = replace_constants(
 	end .to_h) : {}
 )
 
+# Set shell constant if shell was defined in config
+CONSTANTS['SHELL'] ||= CONFIG[:shell] || DEFAULT_SHELL
+
 # Add command-line options to CONFIG
 replace_constants(CONSTANTS, argument_settings).each do |key,val|
 	next  if (key == :config)

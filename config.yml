@@ -5,7 +5,7 @@
 config:
   width:           47                         # Maximum width/columns of window inside terminal
   height:          7                          # Maximum height/lines of window inside terminal
-  shell:           '/bin/bash'                # Shell used to execute keybinding commands, set to 'false' to execute command directly
+  shell:           '/bin/bash -i'             # Shell used to execute keybinding commands, set to 'false' to execute command directly
   text-padding:    4                          # Padding of input for each line
   exec-background: 'true'                     # Execute command in background
   borderless:      'false'                    # Don't draw borders when set to 'true'
@@ -18,6 +18,7 @@ constants:
   terminal: 'termite'
   browser:  'firefox'
   editor:   'vim'
+  scripts:  '@SHORTSTROKES_ROOT/scripts'
 
 ### KEYBINDINGS
 ##  Here you can define your keybindings.
@@ -36,8 +37,15 @@ keybindings:
   Ow: '@browser https://wiki.archlinux.org/'  # Open Arch Linux Wiki
 
   ## EDIT (config) files
-  ee: '@terminal --exec "@editor ~/.config/shortstrokes/config.yml"'  # Edit config file
-  eE: '@terminal --exec "@editor @SHORTSTROKES_ROOT/config.yml"'      # Edit THIS config file
-  eb: '@terminal --exec "@editor ~/.bashrc"'                          # Edit bashrc
-  ev: '@terminal --exec "@editor ~/.vimrc"'                           # Edit vimrc
+  ee: '@scripts/run.rb edit "~/.config/shortstrokes/config.yml" --terminal "@terminal" --shell "@SHELL" --editor "@EDITOR"'  # Edit config file
+  eE: '@scripts/run.rb edit "@SHORTSTROKES_ROOT/config.yml"     --terminal "@terminal" --shell "@SHELL" --editor "@EDITOR"'  # Edit THIS config file
+  eb: '@scripts/run.rb edit "~/.bashrc"                         --terminal "@terminal" --shell "@SHELL" --editor "@EDITOR"'  # Edit bashrc
+  ev: '@scripts/run.rb edit "~/.vimrc"                          --terminal "@terminal" --shell "@SHELL" --editor "@EDITOR"'  # Edit vimrc
+  # This repo includes a scripts directory which currently contains one script:
+  # scripts/run.rb
+  # It's for easier use of running commands or edditing files
+  # in specific shell in new terminal emulator
+  # so you don't need to play around with the weird syntax and
+  # escape sequences when writing the shell commands yourself.
+  # Check scripts/run.rb --help for some more info.
 

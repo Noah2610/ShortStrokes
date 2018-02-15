@@ -46,9 +46,11 @@ CONFIGURATION
         Here you can define any constants/variables you want to be able to use
         in your config. Use them by adding a '@' in front of its name,
         wherever you want it to be replaced by its associated value.
-        There is currently one hard-coded constant that will always be set:
-        @SHORTSTROKES_ROOT, this contains the full path to where the script
+        Currently two constants are set by the script:
+        `@SHORTSTROKES_ROOT`, this contains the full path to where the script
         is located; it is dynamically set everytime the script is called.
+        `@SHELL`, is set to the shell defined in your config or
+        from the command-line. The default shell is `/bin/bash`.
         example:
           # defining it:
             browser: 'firefox'
