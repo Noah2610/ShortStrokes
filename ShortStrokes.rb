@@ -149,7 +149,14 @@ def replace_constants constants, hash, constant_key = '@'
 		next  if (scanned.include? key)
 		const = key.delete constant_key
 		if (val = constants[const])
-			ret_str.gsub! /#{key}/, val.to_s
+			# Some complicated regex magic going on here:
+			# Basically it can't just match the constant, because '@edit' would also match '@editor'.
+			# So we need to check for a non-word character following the constant (ex: ' '|'/')
+			ret_str_tmp = ret_str.dup
+			ret_str.scan /(#{key}(\W))/ do |repl,nonword|
+				ret_str_tmp.sub! /#{Regexp.quote(repl)}/, "#{val.to_s}#{nonword}"
+			end
+			ret_str = ret_str_tmp.dup
 			scanned << key
 		else
 			abort [

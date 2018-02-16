@@ -3,7 +3,21 @@
 ### Simple script to make running shell script in specific shell
 ### in specific terminal emulator with specific parameters easier.
 
+require 'pathname'
 require 'argument_parser'
+
+ROOT = File.dirname(Pathname.new(File.absolute_path(__FILE__)).realpath)
+
+## Set stdout and stderr for both this script and the executed command.
+# TODO:
+# Make stdout and stderr for run.rb and for executed command
+# be available CL options; remove this hard-coding:
+OUTDIR = File.join ROOT, '.run_out'
+Dir.mkdir OUTDIR  unless (File.directory? OUTDIR)
+CMDOUT = File.join OUTDIR, 'cmd_stdout'
+CMDERR = File.join OUTDIR, 'cmd_stderr'
+$stdout.reopen(File.join(OUTDIR, 'run_stdout'), "w")
+$stderr.reopen(File.join(OUTDIR, 'run_stderr'), "w")
 
 HELP = [
 	'run.rb',
@@ -87,14 +101,14 @@ if    (edit = ARGUMENTS[:keywords][:edit])
 	to_edit = edit[1]
 	abort "Error: No file given."                    unless (to_edit)
 	abort "Error: File '#{to_edit}' doesn't exist."  unless (File.exists? to_edit)
-	pid = Process.spawn "#{TERMINAL} --role '#{ROLE}' --exec '#{SHELL} -c \"#{EDITOR} #{to_edit}\"'", out: '/dev/null', err: '/dev/null', pgroup: true
+	pid = Process.spawn "#{TERMINAL} --role '#{ROLE}' --exec '#{SHELL} -c \"#{EDITOR} #{to_edit}\"'", out: CMDOUT, err: CMDERR, pgroup: true
 	Process.detach pid
 
 # Run
 elsif (run = ARGUMENTS[:keywords][:run])
 	to_run = run[1]
 	abort "Error: No command given."                 unless (to_run)
-	pid = Process.spawn "#{TERMINAL} --role '#{ROLE}' --exec '#{SHELL} -c \"#{to_run}\"'", out: "/dev/null", err: "/dev/null", pgroup: true
+	pid = Process.spawn "#{TERMINAL} --role '#{ROLE}' --exec '#{SHELL} -c \"#{to_run}\"'", out: CMDOUT, err: CMDERR, pgroup: true
 	Process.detach pid
 end
 
