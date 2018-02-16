@@ -4,9 +4,30 @@
 A simple shortcut script using vim-like keystrokes.  
 Written in Ruby using the Curses library.  
   
-It also uses my Ruby [ArgumentParser](https://github.com/Noah2610/ArgumentParser) to parse command-line options.
+It also uses my Ruby [Argument Parser](https://github.com/Noah2610/ArgumentParser) to parse command-line options.
 
 ---
+
+## Table Of Contents
+* [Description](#description)
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [Command-Line Usage](#command-line-usage)
+  * [Synopsis](#synopsis)
+  * [Options](#options)
+
+---
+
+## Description
+When started, this script greets you with a Curses window in which you can  
+type anything. Whenever your input is matched to a keybinding defined in  
+your config, it will execute the associated shell script and exit.  
+  
+The basic usage of this script is to bind it to a keyboard shortcut  
+and define your desired keybindings as shell script  
+in a YAML configuration file.  
+After you have entered text inside the program,  
+use the escape key to clear it or to exit the script when the input is empty.  
 
 ## Installation
 Run `git clone https://github.com/Noah2610/ShortStrokes.git` and  
@@ -14,19 +35,6 @@ have Ruby (probably like 2.0 or up)
 and ruby-bundler installed, then just run  
 `bundle install` in the root of the project and after that  
 you should be able to run `./ShortStrokes.rb` without any issues.
-
-## Synopsis
-```
-ShortStrokes [OPTIONS]
-ShortStrokes --config /PATH/TO/CONFIG.yml
-```
-
-## Usage
-The basic usage of this script is to bind it to a keyboard shortcut  
-and define your desired keybindings as shell script  
-in a YAML configuration file.  
-After you have entered text inside the program,  
-use the escape key to clear it or to exit the script when the input is empty.  
 
 ## Configuration
 This script looks for a YAML configuration file  
@@ -72,7 +80,14 @@ ob: '@browser --new-window'
 hw: 'echo "Hello World!"'
 ```
 
-## Options
+## Command-Line Usage
+### Synopsis
+```
+ShortStrokes [OPTIONS]
+ShortStrokes --config /PATH/TO/CONFIG.yml
+```
+
+### Options
 Here is a list of all available command-line options.  
 Any double dash ('--') version of an option can be used  
 in the config file under the 'config' section.
