@@ -6,7 +6,18 @@ require 'yaml'
 
 ROOT = File.dirname(Pathname.new(File.absolute_path(__FILE__)).realpath)
 
-require File.join(ROOT, 'ArgumentParser.rb')
+OUTDIR = File.join ROOT, '.out'
+## Redirect stdout and stderr of executed command
+DEFAULT_CMDOUT = File.join(OUTDIR, 'cmd_stdout')
+DEFAULT_CMDERR = File.join(OUTDIR, 'cmd_stderr')
+## Redirect stderr of this script. FOR DEBUGGING
+# $stderr.reopen(File.join(OUTDIR, 'ss_stderr'))
+
+if (Gem::Specification.find_all_by_name('argument_parser').any?)
+	require 'argument_parser'
+else
+	require File.join(ROOT, 'argument_parser')
+end
 
 CONFIG_PATHS = [
 	File.join(Dir.home, '.config/shortstrokes/config.yml'),
@@ -49,7 +60,9 @@ VALID_ARGUMENTS = {
 		text_padding:  [['text-padding'],                    true],
 		exec_bg:       [['bg','exec-background','exec-bg'],  false],
 		exec_fg:       [['fg','exec-foreground','exec-fg'],  false],
-		no_border:     [['no-border','borderless'],          false]
+		no_border:     [['no-border','borderless'],          false],
+		cmd_stdout:    [['stdout','cmdout','cmd-stdout'],    true],
+		cmd_stderr:    [['stderr','cmderr','cmd-stderr'],    true]
 	}
 }
 
@@ -123,6 +136,16 @@ def handle_arguments args
 	## No Border - no_border
 	if (args[:options][:no_border])
 		settings[:no_border] = true
+	end
+
+	## Redirect stdout - cmd_stdout
+	if (stdout = args[:options][:cmd_stdout])
+		settings[:cmd_stdout] = stdout
+	end
+
+	## Redirect stderr - cmd_stderr
+	if (stderr = args[:options][:cmd_stderr])
+		settings[:cmd_stderr] = stderr
 	end
 
 	return settings
@@ -216,7 +239,9 @@ replace_constants(CONSTANTS, argument_settings).each do |key,val|
 	end  if (value.is_a?(String))
 	CONFIG[key] = value
 end
-CONFIG[:shell] = DEFAULT_SHELL  if (CONFIG[:shell].nil?)
+CONFIG[:shell] ||= DEFAULT_SHELL        # Set default shell if non specified
+CONFIG[:cmd_stdout] ||= DEFAULT_CMDOUT  # Set default command stdout and stderr redirects if non specified
+CONFIG[:cmd_stderr] ||= DEFAULT_CMDERR  # Set default command stdout and stderr redirects if non specified
 # Set keybindings
 KEYBINDINGS = replace_constants(
 	CONSTANTS,
@@ -285,10 +310,10 @@ class ShortStroke
 			if (CONFIG[:exec_bg])
 				## Execute command in background, instead of current shell
 				if (CONFIG[:shell])
-					pid = Process.spawn "#{CONFIG[:shell]} -c '#{cmd}'", out: "/dev/null", err: "/dev/null", pgroup: true
+					pid = Process.spawn "#{CONFIG[:shell]} -c '#{cmd}'", out: CONFIG[:cmd_stdout], err: CONFIG[:cmd_stderr], pgroup: true
 					Process.detach pid
 				else
-					pid = Process.spawn cmd, out: "/dev/null", err: "/dev/null", pgroup: true
+					pid = Process.spawn cmd, out: CONFIG[:cmd_stdout], err: CONFIG[:cmd_stderr], pgroup: true
 					Process.detach pid
 				end
 			else

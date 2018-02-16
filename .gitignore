@@ -1,4 +1,6 @@
 .byebug_history
 Gemfile.lock
+.out/ss_*
+.out/cmd_*
 scripts/.run_out/run_*
 scripts/.run_out/cmd_*

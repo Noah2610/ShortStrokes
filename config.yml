@@ -3,12 +3,22 @@
 ##  These are settings used in the script.
 ##  They can all be used on the command-line, with the same name.
 config:
-  width:           47                         # Maximum width/columns of window inside terminal
-  height:          7                          # Maximum height/lines of window inside terminal
-  shell:           '/bin/bash -i'             # Shell used to execute keybinding commands, set to 'false' to execute command directly
-  text-padding:    4                          # Padding of input for each line
-  exec-background: 'true'                     # Execute command in background
-  borderless:      'false'                    # Don't draw borders when set to 'true'
+  # Maximum width/columns and height/lines of Curses window inside terminal.
+  # Will automatically resize if terminal window is smaller.
+  width:           47
+  height:          7
+  # Shell used to execute keybinding commands, set to 'false' to execute command directly.
+  shell:           '/bin/bash -i'
+  # Padding of input for each line.
+  text-padding:    4
+  # Execute command in background.
+  exec-background: 'true'
+  # Don't draw borders when set to 'true'.
+  borderless:      'false'
+  # Redirect stdout and stderr of executed command;
+  # only applicable when command is run in background.
+  cmd-stdout:      '@SHORTSTROKES_ROOT/.out/cmd_stdout'
+  cmd-stderr:      '@SHORTSTROKES_ROOT/.out/cmd_stderr'
 
 ### CONSTANTS
 ##  Variables that can be used with '@' inside this config.
@@ -37,10 +47,10 @@ keybindings:
   Ow: '@browser https://wiki.archlinux.org/'  # Open Arch Linux Wiki
 
   ## EDIT (config) files
-  ee: '@scripts/run.rb edit "~/.config/shortstrokes/config.yml" --terminal "@terminal" --shell "@SHELL" --editor "@EDITOR"'  # Edit config file
-  eE: '@scripts/run.rb edit "@SHORTSTROKES_ROOT/config.yml"     --terminal "@terminal" --shell "@SHELL" --editor "@EDITOR"'  # Edit THIS config file
-  eb: '@scripts/run.rb edit "~/.bashrc"                         --terminal "@terminal" --shell "@SHELL" --editor "@EDITOR"'  # Edit bashrc
-  ev: '@scripts/run.rb edit "~/.vimrc"                          --terminal "@terminal" --shell "@SHELL" --editor "@EDITOR"'  # Edit vimrc
+  ee: '@scripts/run.rb edit "~/.config/shortstrokes/config.yml" --terminal "@terminal" --shell "@SHELL" --editor "@editor"'  # Edit config file
+  eE: '@scripts/run.rb edit "@SHORTSTROKES_ROOT/config.yml"     --terminal "@terminal" --shell "@SHELL" --editor "@editor"'  # Edit THIS config file
+  eb: '@scripts/run.rb edit "~/.bashrc"                         --terminal "@terminal" --shell "@SHELL" --editor "@editor"'  # Edit bashrc
+  ev: '@scripts/run.rb edit "~/.vimrc"                          --terminal "@terminal" --shell "@SHELL" --editor "@editor"'  # Edit vimrc
   # This repo includes a scripts directory which currently contains one script:
   # scripts/run.rb
   # It's for easier use of running commands or edditing files
