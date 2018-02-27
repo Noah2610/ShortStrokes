@@ -18,8 +18,8 @@ end
 # be available CL options; remove this hard-coding:
 OUTDIR = File.join ROOT, '.run_out'
 Dir.mkdir OUTDIR  unless (File.directory? OUTDIR)
-$stdout.reopen(File.join(OUTDIR, 'run_stdout'), "w")
-$stderr.reopen(File.join(OUTDIR, 'run_stderr'), "w")
+#$stdout.reopen(File.join(OUTDIR, 'run_stdout'), "w")
+#$stderr.reopen(File.join(OUTDIR, 'run_stderr'), "w")
 CMDOUT = File.join OUTDIR, 'cmd_stdout'
 CMDERR = File.join OUTDIR, 'cmd_stderr'
 
@@ -57,7 +57,7 @@ HELP = [
 
 DEFAULTS = {
 	terminal: 'termite',
-	shell:    '/bin/bash --login -i',
+	shell:    '/bin/bash --login',
 	editor:   'vim',
 	role:     'FLOAT'
 }

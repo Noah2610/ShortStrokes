@@ -8,7 +8,7 @@ config:
   width:           47
   height:          7
   # Shell used to execute keybinding commands, set to 'false' to execute command directly.
-  shell:           '/bin/bash -i'
+  shell:           '/bin/bash'
   # Padding of input for each line.
   text-padding:    4
   # Execute command in background.
