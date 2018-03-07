@@ -59,7 +59,7 @@ DEFAULTS = {
 	terminal: 'termite',
 	shell:    '/bin/bash --login',
 	editor:   'vim',
-	role:     'FLOAT'
+	role:     nil
 }
 
 VALID_ARGUMENTS = {
@@ -109,14 +109,14 @@ if    (edit = ARGUMENTS[:keywords][:edit])
 		"Error: One of the files given doesn't exist:",
 		"  #{to_edit.join(",\n")}"
 	].join("\n")                                          if (to_edit.any? { |f| !File.exists?(f) })
-	pid = Process.spawn "#{TERMINAL} --role '#{ROLE}' --exec '#{SHELL} -c \"#{EDITOR} #{to_edit.join(' ')}\"'", out: CMDOUT, err: CMDERR, pgroup: true
+	pid = Process.spawn "#{TERMINAL}#{ROLE ? " --role '#{ROLE}'" : ""} --exec '#{SHELL} -c \"#{EDITOR} #{to_edit.join(' ')}\"'", out: CMDOUT, err: CMDERR, pgroup: true
 	Process.detach pid
 
 # Run
 elsif (run = ARGUMENTS[:keywords][:run])
 	to_run = run[1 .. -1].join '; '
 	abort "Error: No command(s) given."                   if (to_run.empty?)
-	pid = Process.spawn "#{TERMINAL} --role '#{ROLE}' --exec '#{SHELL} -c \"#{to_run}\"'", out: CMDOUT, err: CMDERR, pgroup: true
+	pid = Process.spawn "#{TERMINAL}#{ROLE ? " --role '#{ROLE}'" : ""} --exec '#{SHELL} -c \"#{to_run}\"'", out: CMDOUT, err: CMDERR, pgroup: true
 	Process.detach pid
 
 end
