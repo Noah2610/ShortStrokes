@@ -1,4 +1,5 @@
 .byebug_history
+.virb/
 Gemfile.lock
 .out/ss_*
 .out/cmd_*
