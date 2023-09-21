@@ -22,6 +22,8 @@ Dir.mkdir OUTDIR  unless (File.directory? OUTDIR)
 #$stderr.reopen(File.join(OUTDIR, 'run_stderr'), "w")
 CMDOUT = File.join OUTDIR, 'cmd_stdout'
 CMDERR = File.join OUTDIR, 'cmd_stderr'
+# CMDOUT = $stdout
+# CMDERR = $stderr
 
 HELP = [
 	'run.rb',
@@ -37,7 +39,7 @@ HELP = [
 	'    e, edit FILE1 [FILE2 ...]',
 	'      Start terminal emulator (-t) with role (-r) and shell (-s)',
 	'      and edit file(s) FILE1 [, FILE2, ...] with editor (-e).',
-	'    r, run exec COMMAND1 [COMMAND2 ...]',
+	'    r, run, exec COMMAND1 [COMMAND2 ...]',
 	'      Start terminal emulator (-t) with role (-r) and shell (-s)',
 	'      and run command COMMAND1 [, then COMMAND2, ...].',
 	'      Multiple commands are chained together using a semi-colon (\';\')',
@@ -51,15 +53,18 @@ HELP = [
 	'      Use shell SHELL.',
 	'    -e, --editor EDITOR',
 	'      Use editor EDITOR.',
+	'    -c, --class CLASS',
+	'      Set class CLASS of terminal emulator.',
 	'    -r, --role ROLE',
 	'      Set role ROLE of terminal emulator.'
 ].join("\n")
 
 DEFAULTS = {
-	terminal: 'termite',
+	terminal: 'alacritty',
 	shell:    '/bin/bash --login',
 	editor:   'vim',
-	role:     nil
+	role:     nil,
+	class:    nil,
 }
 
 VALID_ARGUMENTS = {
@@ -68,14 +73,16 @@ VALID_ARGUMENTS = {
 		terminal:  [['t'],              true],
 		shell:     [['s'],              true],
 		editor:    [['e'],              true],
-		role:      [['r'],              true]
+		role:      [['r'],              true],
+		class:     [['c'],              true]
 	},
 	double: {
 		help:      [['help'],           false],
 		terminal:  [['terminal'],       true],
 		shell:     [['shell'],          true],
 		editor:    [['editor'],         true],
-		role:      [['role'],           true]
+		role:      [['role'],           true],
+		class:     [['class'],          true]
 	},
 	keywords: {
 		edit:      [['edit','e'],       :INPUTS],
@@ -99,6 +106,45 @@ TERMINAL = ARGUMENTS[:options][:terminal] || DEFAULTS[:terminal]
 SHELL    = ARGUMENTS[:options][:shell]    || DEFAULTS[:shell]
 EDITOR   = ARGUMENTS[:options][:editor]   || DEFAULTS[:editor]
 ROLE     = ARGUMENTS[:options][:role]     || DEFAULTS[:role]
+CLASS    = ARGUMENTS[:options][:class]    || DEFAULTS[:class]
+
+def run_terminal command
+	def get_cmd_termite command
+		return [
+			TERMINAL,
+			ROLE && "--role '#{ROLE}'",
+			CLASS && "--class '#{CLASS}'",
+			"-e '#{SHELL} -c \"#{command}\"'"
+		].filter(&:itself).join(' ')
+	end
+
+	def get_cmd_alacritty command
+		return [
+			TERMINAL,
+			# ROLE && "--role '#{ROLE}'", NOTE: --role doesn't exist for alacritty
+			((CLASS && !ROLE) || (CLASS && ROLE)) && "--class '#{CLASS}'",
+			!CLASS && ROLE && "--class '#{ROLE}'", # NOTE: for "compatibility", assign given role to class for alacritty
+			"-e #{SHELL} -c '#{command}'"
+		].filter(&:itself).join(' ')
+	end
+
+	cmd = case TERMINAL
+	when "termite"
+		get_cmd_termite command
+	when "alacritty"
+		get_cmd_alacritty command
+	else
+		abort "Error: Unsupported terminal: #{TERMINAL}"
+	end
+
+	pid = Process.spawn(
+		cmd,
+		out: CMDOUT,
+		err: CMDERR,
+		pgroup: true
+	)
+	Process.detach pid
+end
 
 ## Handle Keyword(s)
 # Edit
@@ -109,15 +155,13 @@ if    (edit = ARGUMENTS[:keywords][:edit])
 		"Error: One of the files given doesn't exist:",
 		"  #{to_edit.join(",\n")}"
 	].join("\n")                                          if (to_edit.any? { |f| !File.exists?(f) })
-	pid = Process.spawn "#{TERMINAL}#{ROLE ? " --role '#{ROLE}'" : ""} --exec '#{SHELL} -c \"#{EDITOR} #{to_edit.join(' ')}\"'", out: CMDOUT, err: CMDERR, pgroup: true
-	Process.detach pid
+	run_terminal "#{EDITOR} #{to_edit.join(' ')}"
 
 # Run
 elsif (run = ARGUMENTS[:keywords][:run])
 	to_run = run[1 .. -1].join '; '
 	abort "Error: No command(s) given."                   if (to_run.empty?)
-	pid = Process.spawn "#{TERMINAL}#{ROLE ? " --role '#{ROLE}'" : ""} --exec '#{SHELL} -c \"#{to_run}\"'", out: CMDOUT, err: CMDERR, pgroup: true
-	Process.detach pid
+	run_terminal to_run
 
 end
 
