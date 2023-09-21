@@ -1,4 +1,3 @@
-
 ####################################################
 ## Simple command-line arguments / options parser ##
 ##  https://github.com/Noah2610/ArgumentParser    ##
@@ -9,7 +8,7 @@ class ArgumentParser
 		return nil  if (valid_args.nil? || valid_args.empty?)
 
 		ret = {
-			options:     {},
+			options:  {},
 			keywords: {}
 		}
 
@@ -23,7 +22,7 @@ class ArgumentParser
 			## Check valid SINGLE options
 			if (argument =~ /\A-[\w\d]+\z/)
 				## Get all options of argument
-				cur_opts = argument.delete("-").split("")
+				cur_opts = argument.sub(/\A-/,"").split("")
 				valid_args[:single].each do |id, val|
 					## Loop through every command-line option of current argument
 					#  ex.: -abc -> a,b,c
@@ -41,8 +40,8 @@ class ArgumentParser
 				end
 
 			## Check valid DOUBLE options
-			elsif (argument =~ /\A--[\w\d]+\z/)
-				cur_opt = argument.delete("--")
+			elsif (argument =~ /\A--[\w\d\-]+\z/)
+				cur_opt = argument.sub(/\A--/,"")
 				valid_args[:double].each do |id, val|
 					if (val.first.include? cur_opt)
 						## Check if option takes value
@@ -71,7 +70,7 @@ class ArgumentParser
 				## Check if in kw-chain or for valid keyword
 				if (cur_kw_chain.nil?)
 					valid_args[:keywords].each do |id, val|
-						if (val.first.include? argument)
+						if ([:INPUT, :INPUTS].include?(val.first) || val.first.include?(argument))
 							ret[:keywords][id] = [argument]
 							cur_kw_chain = id
 							break
@@ -83,6 +82,7 @@ class ArgumentParser
 					## Read unlimited custom user input
 					if (read_user_inputs)
 						ret[:keywords][cur_kw_chain] << argument
+						next
 					else
 						## If not unlimited custom user input and argument's length has exceeded
 						## keyword-chain's possible length, then skip
@@ -110,4 +110,3 @@ class ArgumentParser
 		return ret
 	end
 end
-
