@@ -154,7 +154,7 @@ if    (edit = ARGUMENTS[:keywords][:edit])
 	abort [
 		"Error: One of the files given doesn't exist:",
 		"  #{to_edit.join(",\n")}"
-	].join("\n")                                          if (to_edit.any? { |f| !File.exists?(f) })
+	].join("\n")                                          if (to_edit.any? { |f| !File.exist?(f) })
 	run_terminal "#{EDITOR} #{to_edit.join(' ')}"
 
 # Run
